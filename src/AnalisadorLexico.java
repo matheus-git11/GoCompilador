@@ -8,12 +8,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class AnalisadorLexico {
-    private final Pattern regex = Pattern.compile("\".*\"|\\d+|[a-zA-Z_]+[a-zA-Z0-9_]*|[+|*|/|\\-|{|}|(|)|\\[|\\]|\\.|,|;|<|>|=|~|&]");
+    private final Pattern regex = Pattern
+            .compile("\".*\"|\\d+|[a-zA-Z_]+[a-zA-Z0-9_]*|[+|*|/|\\-|{|}|(|)|\\[|\\]|\\.|,|;|<|>|=|~|&]");
     private final List<String> keywords = Arrays.asList(
             "class", "constructor", "function", "method", "field", "static",
             "var", "int", "char", "boolean", "void", "true", "false", "null",
-            "this", "let", "do", "if", "else", "while", "return"
-    );
+            "this", "let", "do", "if", "else", "while", "return");
 
     private final String symbol = "[+|*|/|{|}|(|)|\\.|,|;|<|>|=|~]";
     private final String identifier = "[a-zA-Z_]+[a-zA-Z0-9_]*";
