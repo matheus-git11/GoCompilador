@@ -24,7 +24,7 @@ public class AnalisadorLexico {
     private int index;
 
     public AnalisadorLexico() throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader("C:\\Users\\mathe\\IdeaProjects\\CompiladorGo\\src\\CodigoGo.txt"));
+        BufferedReader reader = new BufferedReader(new FileReader("GoCompilador\\src\\CodigoGo.txt"));
         StringBuilder content = new StringBuilder();
         String line;
         while ((line = reader.readLine()) != null) {
