@@ -146,36 +146,7 @@ public class AnalisadorSintatico {
         return false;
     }
 
-    public boolean verificaExpressaoMatematica(List<String> tokens) {
-        Stack<String> pilha = new Stack<>();
-        boolean expectOperand = true; 
-
-        for (String token : tokens) {
-            if (isNumber(token)) {
-                if (!expectOperand) {
-                    return false; 
-                }
-                expectOperand = false;
-            } else if (isOperator(token)) {
-                if (expectOperand) {
-                    return false; 
-                }
-                expectOperand = true;
-            } else if (token.equals("(")) {
-                pilha.push(token);
-                expectOperand = true;
-            } else if (token.equals(")")) {
-                if (pilha.isEmpty() || !pilha.pop().equals("(")) {
-                    return false; 
-                }
-                expectOperand = false;
-            } else {
-                return false; 
-            }
-        }
-
-        return pilha.isEmpty() && !expectOperand; 
-    }
+    
 
     private boolean isNumber(String token) {
         
