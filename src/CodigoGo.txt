@@ -5,16 +5,16 @@ import (
 )
 
 func main() {
-   var num int
+   var num  int
 
-    fmt.Println("Digite o primeiro número:")
+    fmt.Println("Digite o primeiro numero:")
     fmt.Scanln(&num1)
 
-    fmt.Println("Digite o segundo número:")
+    fmt.Println("Digite o segundo numero:")
     fmt.Scanln(&num2)
 
     resultado := soma(num1, num2)
-    fmt.Printf("A soma de %d e %d é: %d\n", num1, num2, resultado)
+    fmt.Printf("A soma de %d e %d: %d\n", num1, num2, resultado)
 }
 
 func soma(a, b int) int {
