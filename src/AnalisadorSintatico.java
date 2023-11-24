@@ -1,5 +1,7 @@
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class AnalisadorSintatico {
     private final AnalisadorLexico lex;
@@ -13,35 +15,53 @@ public class AnalisadorSintatico {
     public boolean verificaDeclaracaoVariaveis(List<String> tokens) {
         int i = 0;
         while (i < tokens.size()) {
-
             String currentToken = tokens.get(i);
 
             if (currentToken.equals("var")) {
                 i++;
 
-                // Verifica se o próximo token é um identificador válido
-                if (i < tokens.size() && tokens.get(i).matches("[a-zA-Z_]+")) {
-                    i++;
-                } else {
+                if (!verificaIdentificador(tokens, i)) {
+                    System.out.println("Erro: Identificador inválido após 'var'.");
                     return false;
                 }
+                i++;
 
-                // Verifica se o próximo token é um tipo válido (int, string, etc.)
-                if (i < tokens.size() && (tokens.get(i).equals("int") || tokens.get(i).equals("string")
-                        || tokens.get(i).equals("bool"))
-
-                ) {
-                    i++;
-                } else {
+                if (!verificaTipo(tokens, i)) {
+                    System.out.println("Erro: Tipo de dado inválido para a variável.");
                     return false;
                 }
+                i++;
 
+                if (i < tokens.size() && tokens.get(i).equals("=")) {
+                    i++;
+
+                }
+
+                while (i < tokens.size() && tokens.get(i).equals(",")) {
+                    i++;
+                    if (!verificaIdentificador(tokens, i)) {
+                        System.out.println("Erro: Identificador inválido na lista de variáveis.");
+                        return false;
+                    }
+                    i++;
+                }
             } else {
                 i++;
             }
         }
+        return true;
+    }
 
-        return true; // Se percorreu todos os tokens sem problemas, retorna true
+    private boolean verificaIdentificador(List<String> tokens, int index) {
+        return index < tokens.size() && tokens.get(index).matches("[a-zA-Z_][a-zA-Z0-9_]*");
+    }
+
+    private boolean verificaTipo(List<String> tokens, int index) {
+        if (index >= tokens.size())
+            return false;
+        String tipo = tokens.get(index);
+        return tipo.equals("int") || tipo.equals("string") || tipo.equals("bool");
+
     }
 
     public boolean verificaFuncMain() {
@@ -51,9 +71,8 @@ public class AnalisadorSintatico {
         while (lex.hasNextToken()) {
             String token = lex.nextToken();
 
-            // Verifica se encontrou a palavra-chave "func"
             if (token.equals("func")) {
-                // Verifica se o próximo token é "main"
+
                 if (lex.hasNextToken() && lex.nextToken().equals("main")) {
                     temMain = true;
                     break;
@@ -72,16 +91,16 @@ public class AnalisadorSintatico {
             String token = lex.nextToken();
 
             if (token.equals("func")) {
-                // Verifica se há um identificador após a palavra-chave 'func'
+
                 if (lex.hasNextToken() && lex.tokenType(lex.nextToken()).equals("identifier")) {
-                    estruturaCorreta = true; // Estrutura func + nome está correta
+                    estruturaCorreta = true;
                 } else {
-                    return false; // Nome de função ausente ou inválido após 'func'
+                    return false;
                 }
             }
         }
 
-        return estruturaCorreta; // Retorna true se a estrutura func + nome for encontrada
+        return estruturaCorreta;
     }
 
     public boolean verificaChavesParantesesFechados() {
@@ -94,7 +113,7 @@ public class AnalisadorSintatico {
                 pilha.push(token);
             } else if (token.equals("}") || token.equals("]") || token.equals(")")) {
                 if (pilha.isEmpty()) {
-                    return false; // Encontrou um fechamento sem correspondência de abertura
+                    return false;
                 }
 
                 String topo = pilha.peek();
@@ -103,12 +122,12 @@ public class AnalisadorSintatico {
                         (token.equals(")") && topo.equals("("))) {
                     pilha.pop();
                 } else {
-                    return false; // Fechamento incompatível com o topo da pilha
+                    return false;
                 }
             }
         }
 
-        return pilha.isEmpty(); // Verifica se todos os símbolos foram fechados corretamente
+        return pilha.isEmpty();
     }
 
     private void advanceToken() {
@@ -127,7 +146,46 @@ public class AnalisadorSintatico {
         return false;
     }
 
-    // Método para a regra 'expression'
+    public boolean verificaExpressaoMatematica(List<String> tokens) {
+        Stack<String> pilha = new Stack<>();
+        boolean expectOperand = true; 
+
+        for (String token : tokens) {
+            if (isNumber(token)) {
+                if (!expectOperand) {
+                    return false; 
+                }
+                expectOperand = false;
+            } else if (isOperator(token)) {
+                if (expectOperand) {
+                    return false; 
+                }
+                expectOperand = true;
+            } else if (token.equals("(")) {
+                pilha.push(token);
+                expectOperand = true;
+            } else if (token.equals(")")) {
+                if (pilha.isEmpty() || !pilha.pop().equals("(")) {
+                    return false; 
+                }
+                expectOperand = false;
+            } else {
+                return false; 
+            }
+        }
+
+        return pilha.isEmpty() && !expectOperand; 
+    }
+
+    private boolean isNumber(String token) {
+        
+        return token.matches("-?\\d+(\\.\\d+)?"); 
+    }
+
+    private boolean isOperator(String token) {
+        return token.equals("+") || token.equals("-") || token.equals("*") || token.equals("/");
+    }
+
     private void expression() {
         term();
         while (currentToken != null && (currentToken.equals("+") || currentToken.equals("-"))) {
@@ -136,7 +194,6 @@ public class AnalisadorSintatico {
         }
     }
 
-    // Método para a regra 'term'
     private void term() {
         factor();
         while (currentToken != null && (currentToken.equals("*") || currentToken.equals("/"))) {
@@ -145,50 +202,70 @@ public class AnalisadorSintatico {
         }
     }
 
-    // Método para a regra 'factor'
     private void factor() {
         if (currentToken != null && currentToken.matches("\\d+")) {
             advanceToken();
         } else if (matchToken("(")) {
             expression();
             if (!matchToken(")")) {
-                // Erro: Esperado ')' após expressão
-                // Tratamento de erro aqui
+
             }
         } else {
-            // Erro: Token inesperado
-            // Tratamento de erro aqui
+
         }
     }
 
-    // Método para a regra 'ifStatement'
     private void ifStatement() {
         if (matchToken("if")) {
             if (!matchToken("(")) {
-                // Erro: Esperado '(' após 'if'
-                // Tratamento de erro aqui
+
             }
             expression();
             if (!matchToken(")")) {
-                // Erro: Esperado ')' após expressão do 'if'
-                // Tratamento de erro aqui
+
             }
             ifStatement();
             if (matchToken("else")) {
                 ifStatement();
             }
         }
-            }
+    }
 
-    // Método para iniciar a análise sintática
     public void parse() {
         ifStatement();
         if (currentToken != null) {
-            // Erro: Tokens extras no final
-            // Tratamento de erro aqui
+
         } else {
             System.out.println("Análise sintática concluída com sucesso!");
         }
     }
 
+    public boolean verificaFuncoes(List<String> tokens) {
+        Pattern patternFunc = Pattern
+                .compile("func\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\(([^)]*)\\)(\\s*[^\\s{]+)?\\s*\\{");
+        Matcher matcher;
+
+        for (int i = 0; i < tokens.size(); i++) {
+            String token = tokens.get(i);
+
+            if (token.equals("func")) {
+
+                StringBuilder funcDeclaration = new StringBuilder();
+                while (i < tokens.size() && !tokens.get(i).equals("{")) {
+                    funcDeclaration.append(tokens.get(i++)).append(" ");
+                }
+
+                matcher = patternFunc.matcher(funcDeclaration.toString().trim());
+                if (!matcher.matches()) {
+                    return false;
+                }
+
+                if (i < tokens.size() && tokens.get(i).equals("{")) {
+                    i++;
+                }
+            }
+        }
+
+        return true;
+    }
 }
