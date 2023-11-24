@@ -28,7 +28,7 @@ public class AnalisadorSintatico {
 
                 // Verifica se o próximo token é um tipo válido (int, string, etc.)
                 if (i < tokens.size() && (tokens.get(i).equals("int") || tokens.get(i).equals("string")
-                        || tokens.get(i).equals("char") || tokens.get(i).equals("boolean"))
+                        || tokens.get(i).equals("bool"))
 
                 ) {
                     i++;
