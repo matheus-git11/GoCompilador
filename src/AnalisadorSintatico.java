@@ -2,11 +2,11 @@ import java.io.IOException;
 import java.util.*;
 
 public class AnalisadorSintatico {
-    private final AnalisadorLexico lexico;
+    private final AnalisadorLexico lex;
     private String currentToken;
 
     public AnalisadorSintatico() throws IOException {
-        lexico = new AnalisadorLexico();
+        lex = new AnalisadorLexico();
         advanceToken();
     }
 
@@ -48,13 +48,13 @@ public class AnalisadorSintatico {
         boolean temMain = false;
         advanceToken();
 
-        while (lexico.hasNextToken()) {
-            String token = lexico.nextToken();
+        while (lex.hasNextToken()) {
+            String token = lex.nextToken();
 
             // Verifica se encontrou a palavra-chave "func"
             if (token.equals("func")) {
                 // Verifica se o próximo token é "main"
-                if (lexico.hasNextToken() && lexico.nextToken().equals("main")) {
+                if (lex.hasNextToken() && lex.nextToken().equals("main")) {
                     temMain = true;
                     break;
                 }
@@ -65,15 +65,15 @@ public class AnalisadorSintatico {
     }
 
     public boolean verificaEstruturaFunc() throws IOException {
-
+        AnalisadorLexico lex = new AnalisadorLexico();
         boolean estruturaCorreta = false;
 
-        while (lexico.hasNextToken()) {
-            String token = lexico.nextToken();
+        while (lex.hasNextToken()) {
+            String token = lex.nextToken();
 
             if (token.equals("func")) {
                 // Verifica se há um identificador após a palavra-chave 'func'
-                if (lexico.hasNextToken() && lexico.tokenType(lexico.nextToken()).equals("identifier")) {
+                if (lex.hasNextToken() && lex.tokenType(lex.nextToken()).equals("identifier")) {
                     estruturaCorreta = true; // Estrutura func + nome está correta
                 } else {
                     return false; // Nome de função ausente ou inválido após 'func'
@@ -87,8 +87,8 @@ public class AnalisadorSintatico {
     public boolean verificaChavesParantesesFechados() {
         Stack<String> pilha = new Stack<>();
 
-        while (lexico.hasNextToken()) {
-            String token = lexico.nextToken();
+        while (lex.hasNextToken()) {
+            String token = lex.nextToken();
 
             if (token.equals("{") || token.equals("[") || token.equals("(")) {
                 pilha.push(token);
@@ -112,8 +112,8 @@ public class AnalisadorSintatico {
     }
 
     private void advanceToken() {
-        if (lexico.hasNextToken()) {
-            currentToken = lexico.nextToken();
+        if (lex.hasNextToken()) {
+            currentToken = lex.nextToken();
         } else {
             currentToken = null;
         }
@@ -178,7 +178,7 @@ public class AnalisadorSintatico {
                 ifStatement();
             }
         }
-    }
+            }
 
     // Método para iniciar a análise sintática
     public void parse() {
@@ -190,4 +190,5 @@ public class AnalisadorSintatico {
             System.out.println("Análise sintática concluída com sucesso!");
         }
     }
+
 }
