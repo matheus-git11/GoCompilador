@@ -11,20 +11,25 @@ public class AnalisadorLexico {
     private final Pattern regex = Pattern
             .compile("\".*\"|\\d+|[a-zA-Z_]+[a-zA-Z0-9_]*|[+|*|/|\\-|{|}|(|)|\\[|\\]|\\.|,|;|<|>|=|~|&]");
     private final List<String> keywords = Arrays.asList(
-            "class", "constructor", "function", "method", "field", "static",
-            "var", "int", "char", "boolean", "void", "true", "false", "null",
-            "this", "let", "do", "if", "else", "while", "return");
+        "map","import","interface", "switch", "go", "goto", "defer", "for",
+        "var", "chan", "type", "else", "return", "break", "const","case", "continue",
+        "default", "falltrough", "defer", "package", "range","if",
+        "select", "struct", "return", "func");
 
-    private final String symbol = "[+|*|/|{|}|(|)|\\.|,|;|<|>|=|~]";
-    private final String identifier = "[a-zA-Z_]+[a-zA-Z0-9_]*";
-    private final String integer = "\\d+";
-    private final String string = "\".*\"";
+        private final String arithmeticOperator = "[+|*|/|-|/=|%]";
+        private final String logicalOperator = "(&|\\||\\^|<<|>>|&\\^|&&|\\|\\|)";
+        private final String comparisonOperator = "[<|>|==|!=|<=|>=|!]";
+        private final String assignmentOperator = "(\\+=|-=|\\*=|/=|%|=|&=|\\|=|\\^=|<<=|>>=|&\\^=|=)";
+        private final String identifier = "[a-zA-Z_]+[a-zA-Z0-9_]*";
+        private final String integer = "\\d+";
+        private final String string = "\".*\"";
+        private final String delimiter = "[(){}\\[\\].,]";
 
     private List<String> tokens;
     private int index;
 
     public AnalisadorLexico() throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader("GoCompilador\\src\\CodigoGo.txt"));
+        BufferedReader reader = new BufferedReader(new FileReader("src/CodigoGo.txt"));
         StringBuilder content = new StringBuilder();
         String line;
         while ((line = reader.readLine()) != null) {
@@ -52,12 +57,22 @@ public class AnalisadorLexico {
     public String tokenType(String token) {
         if (token.matches(identifier)) {
             return keywords.contains(token) ? "keyword" : "identifier";
-        } else if (token.matches(symbol)) {
-            return "symbol";
+        } else if (index < tokens.size() && token.matches("[+|-|*|/]") && tokens.get(index).equals("=")) {
+            return "assignment operator";
+        } else if (token.matches(arithmeticOperator)) {
+            return "arithmetic operator";
+        } else if (token.matches(logicalOperator)) {
+            return "logical operator";
+        } else if (token.matches(comparisonOperator)) {
+            return "comparison operator";
+        } else if (token.matches(assignmentOperator)) {
+            return "assignment operator";
         } else if (token.matches(integer)) {
             return "integer";
         } else if (token.matches(string)) {
             return "string";
+        } else if (token.matches(delimiter)) {
+            return "delimiter";
         }
         return "unknown";
     }
